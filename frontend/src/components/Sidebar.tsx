@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Server, AlertTriangle, Settings, Activity, Ticket as TicketIcon } from 'lucide-react';
+import { LayoutDashboard, Server, AlertTriangle, Settings, Activity, Ticket as TicketIcon, Calendar, BarChart2 } from 'lucide-react';
 
 const Sidebar: React.FC = () => {
   const navItems = [
@@ -8,6 +8,8 @@ const Sidebar: React.FC = () => {
     { to: '/servers', icon: <Server size={20} />, label: 'Servers' },
     { to: '/incidents', icon: <AlertTriangle size={20} />, label: 'Incidents' },
     { to: '/tickets', icon: <TicketIcon size={20} />, label: 'Tickets' },
+    { to: '/maintenance', icon: <Calendar size={20} />, label: 'Maintenance' },
+    { to: '/reports', icon: <BarChart2 size={20} />, label: 'Reports' },
     { to: '/settings', icon: <Settings size={20} />, label: 'Settings' },
   ];
 

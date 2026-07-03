@@ -22,3 +22,49 @@ scrape_configs:
   - job_name: 'cadvisor'
     static_configs:
       - targets: ['cadvisor:8080']
+
+  # Auto-Discovery Scaffolds (Feature 5)
+  # - job_name: 'docker_discovery'
+  #   docker_sd_configs:
+  #     - host: unix:///var/run/docker.sock
+  #       port: 80
+
+  # - job_name: 'kubernetes_pods'
+  #   kubernetes_sd_configs:
+  #     - role: pod
+
+  # - job_name: 'ec2_instances'
+  #   ec2_sd_configs:
+  #     - region: us-east-1
+  #       port: 9100
+
+  - job_name: 'blackbox_http'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+        - http://backend:8000/docs
+        - http://frontend:80
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+
+  - job_name: 'blackbox_icmp'
+    metrics_path: /probe
+    params:
+      module: [icmp_ping]
+    static_configs:
+      - targets:
+        - 8.8.8.8
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115

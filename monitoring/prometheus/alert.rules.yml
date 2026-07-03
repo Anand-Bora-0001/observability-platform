@@ -9,6 +9,9 @@ groups:
         annotations:
           summary: "High CPU usage detected"
           description: "CPU usage is above 85% on {{ $labels.instance }} for more than 5 minutes."
+          runbook_url: "https://wiki.example.com/runbooks/high_cpu"
+          suggested_action: "Identify top processes via top/htop. Restart application if mem leak suspected."
+          escalation: "L1 NOC -> App Dev Team"
 
       - alert: HighMemoryUsage
         expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > 90
@@ -18,6 +21,9 @@ groups:
         annotations:
           summary: "High Memory usage detected"
           description: "Memory usage is above 90% on {{ $labels.instance }}."
+          runbook_url: "https://wiki.example.com/runbooks/high_memory"
+          suggested_action: "Check dmesg for OOM kills. Restart offending service."
+          escalation: "L1 NOC -> SRE Team"
 
       - alert: InstanceDown
         expr: up == 0
@@ -27,3 +33,42 @@ groups:
         annotations:
           summary: "Instance {{ $labels.instance }} down"
           description: "{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 1 minute."
+          runbook_url: "https://wiki.example.com/runbooks/instance_down"
+          suggested_action: "Verify EC2/VM status. Ping host. Check network firewalls."
+          escalation: "L1 NOC -> Infra Team"
+
+      - alert: HighLoadAverage
+        expr: node_load15 / count by (instance) (node_cpu_seconds_total{mode="system"}) > 1.5
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High Load Average"
+          description: "15-minute load average is critically high."
+          runbook_url: "https://wiki.example.com/runbooks/high_load"
+          suggested_action: "Check for high IOwait or CPU bottlenecks."
+          escalation: "L1 NOC"
+
+      - alert: ZombieProcesses
+        expr: node_procs_state{state="Z"} > 5
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Zombie Processes Detected"
+          description: "More than 5 zombie processes on {{ $labels.instance }}."
+          runbook_url: "https://wiki.example.com/runbooks/zombie_procs"
+          suggested_action: "Identify parent process and kill if safe."
+          escalation: "L1 NOC"
+
+      - alert: FileDescriptorExhaustion
+        expr: node_filefd_allocated / node_filefd_maximum * 100 > 80
+        for: 15m
+        labels:
+          severity: critical
+        annotations:
+          summary: "File Descriptor Exhaustion"
+          description: "Over 80% of file descriptors in use on {{ $labels.instance }}."
+          runbook_url: "https://wiki.example.com/runbooks/fd_exhaustion"
+          suggested_action: "Increase ulimit or find leaking application."
+          escalation: "L1 NOC -> SRE Team"

@@ -147,6 +147,19 @@ services:
       - app-network
     restart: unless-stopped
 
+  blackbox-exporter:
+    image: prom/blackbox-exporter:v0.24.0
+    container_name: observability-blackbox
+    volumes:
+      - ./monitoring/blackbox:/etc/blackbox_exporter
+    command:
+      - '--config.file=/etc/blackbox_exporter/blackbox.yml'
+    ports:
+      - "9115:9115"
+    networks:
+      - app-network
+    restart: unless-stopped
+
 volumes:
   postgres_data:
   redis_data:

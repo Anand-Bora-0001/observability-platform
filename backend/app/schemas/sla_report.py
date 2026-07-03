@@ -7,6 +7,8 @@ class SLAReportBase(BaseModel):
     month: int
     year: int
     uptime_percentage: float
+    daily_uptime_percentage: Optional[float] = None
+    weekly_uptime_percentage: Optional[float] = None
     total_downtime_minutes: float = 0.0
     mttr_minutes: Optional[float] = None
     mtbf_hours: Optional[float] = None

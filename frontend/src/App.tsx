@@ -6,6 +6,8 @@ import Dashboard from './pages/Dashboard';
 import Servers from './pages/Servers';
 import Incidents from './pages/Incidents';
 import Tickets from './pages/Tickets';
+import Maintenance from './pages/Maintenance';
+import Reports from './pages/Reports';
 
 const Settings = () => (
   <div className="text-white text-2xl font-bold">Settings (Coming Soon)</div>
@@ -23,6 +25,8 @@ function App() {
           <Route path="/servers" element={<Servers />} />
           <Route path="/incidents" element={<Incidents />} />
           <Route path="/tickets" element={<Tickets />} />
+          <Route path="/maintenance" element={<Maintenance />} />
+          <Route path="/reports" element={<Reports />} />
           <Route path="/settings" element={<Settings />} />
         </Route>
 

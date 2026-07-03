@@ -1,15 +1,39 @@
 global:
   resolve_timeout: 5m
+  smtp_smarthost: 'smtp.example.com:587'
+  smtp_from: 'alertmanager@example.com'
+  smtp_auth_username: 'alertmanager'
+  smtp_auth_password: 'password'
+  slack_api_url: 'https://example.com/slack-webhook-placeholder'
 
 route:
   group_by: ['alertname', 'cluster', 'service']
   group_wait: 10s
   group_interval: 1m
   repeat_interval: 1h
-  receiver: 'fastapi-backend-webhook'
+  receiver: 'default-receiver'
+  routes:
+    - matchers:
+        - severity="critical"
+      receiver: 'critical-receiver'
 
 receivers:
-  - name: 'fastapi-backend-webhook'
+  - name: 'default-receiver'
     webhook_configs:
-      - url: 'http://host.docker.internal:8000/api/webhooks/alertmanager'
+      - url: 'http://backend:8000/api/webhooks/alertmanager'
+        send_resolved: true
+
+  - name: 'critical-receiver'
+    webhook_configs:
+      - url: 'http://backend:8000/api/webhooks/alertmanager'
+        send_resolved: true
+    slack_configs:
+      - channel: '#alerts-critical'
+        send_resolved: true
+    email_configs:
+      - to: 'noc-team@example.com'
+        send_resolved: true
+    telegram_configs:
+      - bot_token: '123456789:AABBCCDDEEFFGGHHIIJJKKLLMMNNOOPPQQRR'
+        chat_id: -1001234567890
         send_resolved: true

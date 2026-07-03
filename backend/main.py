@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api import auth, servers, services, webhooks, tickets, sla
+from app.api import auth, servers, services, webhooks, tickets, sla, maintenance
 
 app = FastAPI(
     title="Observability Platform API",
@@ -23,6 +23,7 @@ app.include_router(services.router, prefix="/api/services", tags=["services"])
 app.include_router(webhooks.router, prefix="/api/webhooks", tags=["webhooks"])
 app.include_router(tickets.router, prefix="/api/tickets", tags=["tickets"])
 app.include_router(sla.router, prefix="/api/sla", tags=["sla"])
+app.include_router(maintenance.router, prefix="/api/maintenance", tags=["maintenance"])
 
 @app.get("/")
 def read_root():

@@ -11,7 +11,9 @@ class SLAReport(Base):
     month = Column(Integer, nullable=False)
     year = Column(Integer, nullable=False)
     
-    uptime_percentage = Column(Float, nullable=False)
+    uptime_percentage = Column(Float, nullable=False) # Monthly
+    daily_uptime_percentage = Column(Float, nullable=True)
+    weekly_uptime_percentage = Column(Float, nullable=True)
     total_downtime_minutes = Column(Float, default=0.0)
     mttr_minutes = Column(Float, nullable=True) # Mean Time to Recovery
     mtbf_hours = Column(Float, nullable=True) # Mean Time Between Failures
