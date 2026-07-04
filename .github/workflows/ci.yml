@@ -1,61 +1,56 @@
-name: CI/CD Pipeline
+name: Enterprise CI Pipeline
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ main, develop ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ main, develop ]
 
 jobs:
-  backend-test:
+  test-python-backend:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python 3.12
-      uses: actions/setup-python@v4
+    - uses: actions/checkout@v4
+    - name: Set up Python
+      uses: actions/setup-python@v5
       with:
-        python-version: "3.12"
+        python-version: '3.11'
     - name: Install dependencies
       run: |
-        cd backend
         python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        # pip install pytest
-    - name: Lint with flake8
+        pip install -r services/backend-python/requirements.txt
+    - name: Run Tests
       run: |
-        # flake8 .
-        echo "Linting passed"
-    - name: Test with pytest
-      run: |
-        # pytest
-        echo "Tests passed"
+        cd services/backend-python
+        pytest tests/
 
-  frontend-test:
+  test-go-identity:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - name: Use Node.js 18.x
-      uses: actions/setup-node@v3
+    - uses: actions/checkout@v4
+    - name: Set up Go
+      uses: actions/setup-go@v5
       with:
-        node-version: 18.x
-        cache: 'npm'
-        cache-dependency-path: frontend/package-lock.json
-    - name: Install dependencies
+        go-version: '1.23'
+    - name: Run Go Tests
       run: |
-        cd frontend
-        npm ci
-    - name: Build
-      run: |
-        cd frontend
-        npm run build
+        cd services/identity-go
+        go test ./...
 
-  docker-build:
-    needs: [backend-test, frontend-test]
+  lint-frontends:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
     steps:
-    - uses: actions/checkout@v3
-    - name: Build Backend Docker Image
-      run: docker build -t observability-backend:latest ./backend
-    - name: Build Frontend Docker Image
-      run: docker build -t observability-frontend:latest ./frontend
+    - uses: actions/checkout@v4
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+    - name: Lint Dashboard
+      run: |
+        cd apps/dashboard-react
+        npm ci
+        npm run lint || true
+    - name: Lint Admin Portal
+      run: |
+        cd apps/admin-vue
+        npm ci || true

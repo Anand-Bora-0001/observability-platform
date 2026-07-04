@@ -1,22 +1,41 @@
 version: '3.8'
 
 services:
-  frontend:
+  # -------------------------
+  # Frontend Applications
+  # -------------------------
+  dashboard-react:
     build:
-      context: ./frontend
+      context: ./apps/dashboard-react
       dockerfile: Dockerfile
-    container_name: observability-frontend
+    container_name: observability-dashboard
     ports:
       - "80:80"
     depends_on:
-      - backend
+      - backend-python
     networks:
       - app-network
     restart: unless-stopped
 
-  backend:
+  admin-vue:
     build:
-      context: ./backend
+      context: ./apps/admin-vue
+      dockerfile: Dockerfile
+    container_name: observability-admin
+    ports:
+      - "8081:80"
+    depends_on:
+      - identity-go
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  # -------------------------
+  # Backend Services
+  # -------------------------
+  backend-python:
+    build:
+      context: ./services/backend-python
       dockerfile: Dockerfile
     container_name: observability-backend
     environment:
@@ -30,8 +49,84 @@ services:
       - app-network
     restart: unless-stopped
 
+  identity-go:
+    build:
+      context: ./services/identity-go
+      dockerfile: Dockerfile
+    container_name: observability-identity
+    ports:
+      - "50051:50051"
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  ai-ops-python:
+    build:
+      context: ./services/ai-ops-python
+      dockerfile: Dockerfile
+    container_name: observability-ai-ops
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-mock}
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+    ports:
+      - "8002:8002"
+    networks:
+      - app-network
+    restart: unless-stopped
+    depends_on:
+      - kafka
+
   # -------------------------
-  # Core Backend Services
+  # Event Streaming (Kafka)
+  # -------------------------
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: observability-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: observability-kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://kafka:29092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  # -------------------------
+  # Security (Vault)
+  # -------------------------
+  vault:
+    image: hashicorp/vault:1.15.4
+    container_name: observability-vault
+    ports:
+      - "8200:8200"
+    environment:
+      - VAULT_DEV_ROOT_TOKEN_ID=dev-only-token
+      - VAULT_DEV_LISTEN_ADDRESS=0.0.0.0:8200
+    cap_add:
+      - IPC_LOCK
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  # -------------------------
+  # Data Layer
   # -------------------------
   db:
     image: postgres:15-alpine
@@ -60,13 +155,13 @@ services:
     restart: unless-stopped
 
   # -------------------------
-  # Monitoring Services
+  # Monitoring Infrastructure
   # -------------------------
   prometheus:
     image: prom/prometheus:v2.48.0
     container_name: observability-prometheus
     volumes:
-      - ./monitoring/prometheus:/etc/prometheus
+      - ./infrastructure/monitoring/prometheus:/etc/prometheus
       - prometheus_data:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
@@ -84,7 +179,7 @@ services:
     image: prom/alertmanager:v0.26.0
     container_name: observability-alertmanager
     volumes:
-      - ./monitoring/alertmanager:/etc/alertmanager
+      - ./infrastructure/monitoring/alertmanager:/etc/alertmanager
     command:
       - '--config.file=/etc/alertmanager/alertmanager.yml'
       - '--storage.path=/alertmanager'
@@ -102,8 +197,8 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=admin
       - GF_USERS_ALLOW_SIGN_UP=false
     volumes:
-      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
-      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards
+      - ./infrastructure/monitoring/grafana/provisioning:/etc/grafana/provisioning
+      - ./infrastructure/monitoring/grafana/dashboards:/var/lib/grafana/dashboards
       - grafana_data:/var/lib/grafana
     ports:
       - "3000:3000"
@@ -151,11 +246,46 @@ services:
     image: prom/blackbox-exporter:v0.24.0
     container_name: observability-blackbox
     volumes:
-      - ./monitoring/blackbox:/etc/blackbox_exporter
+      - ./infrastructure/monitoring/blackbox:/etc/blackbox_exporter
     command:
       - '--config.file=/etc/blackbox_exporter/blackbox.yml'
     ports:
       - "9115:9115"
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: observability-jaeger
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    ports:
+      - "16686:16686" # UI
+      - "4317:4317"   # OTLP gRPC
+      - "4318:4318"   # OTLP HTTP
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  loki:
+    image: grafana/loki:2.9.2
+    container_name: observability-loki
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  promtail:
+    image: grafana/promtail:2.9.2
+    container_name: observability-promtail
+    volumes:
+      - /var/log:/var/log
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: -config.file=/etc/promtail/config.yml
     networks:
       - app-network
     restart: unless-stopped

@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+langchain
+langchain-openai
+pydantic
+pydantic-settings
+httpx
+confluent-kafka==2.3.0

@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package auth;
+option go_package = "github.com/observability-platform/identity-go/pb";
+
+// The Auth service definition.
+service AuthService {
+  // Validate a JWT token and return the user details + roles
+  rpc ValidateToken (ValidateTokenRequest) returns (ValidateTokenResponse) {}
+  
+  // Check if a user has a specific permission (RBAC/ABAC)
+  rpc CheckPermission (CheckPermissionRequest) returns (CheckPermissionResponse) {}
+}
+
+// The request message containing the JWT token.
+message ValidateTokenRequest {
+  string token = 1;
+}
+
+// The response message containing user identity details.
+message ValidateTokenResponse {
+  bool is_valid = 1;
+  string user_id = 2;
+  string email = 3;
+  repeated string roles = 4;
+  string organization_id = 5;
+  string error_message = 6;
+}
+
+message CheckPermissionRequest {
+  string user_id = 1;
+  string resource = 2;
+  string action = 3;
+}
+
+message CheckPermissionResponse {
+  bool allowed = 1;
+  string reason = 2;
+}

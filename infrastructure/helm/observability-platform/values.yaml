@@ -1,0 +1,30 @@
+# Default values for observability-platform.
+replicaCount: 2
+
+image:
+  repository: my-registry/observability-backend
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+  hosts:
+    - host: admin.platform.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+
+identityService:
+  enabled: true
+  replicaCount: 3
+
+database:
+  enabled: true
+  url: "postgresql://admin:adminpassword@observability-db:5432/observability"

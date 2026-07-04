@@ -1,0 +1,42 @@
+name: Enterprise CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v2
+
+    - name: Build and push Python Backend
+      run: |
+        docker build -t ${{ steps.login-ecr.outputs.registry }}/observability-backend:${{ github.sha }} ./services/backend-python
+        docker push ${{ steps.login-ecr.outputs.registry }}/observability-backend:${{ github.sha }}
+
+  deploy-helm:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Update KubeConfig
+      run: aws eks update-kubeconfig --name observability-cluster --region us-east-1
+
+    - name: Deploy via Helm
+      run: |
+        helm upgrade --install observability-platform ./infrastructure/helm/observability-platform \
+          --set image.tag=${{ github.sha }} \
+          --namespace observability --create-namespace

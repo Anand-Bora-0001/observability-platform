@@ -22,3 +22,12 @@ modules:
       query_type: "A"
       valid_rcodes:
         - NOERROR
+
+  http_ssl_expiry:
+    prober: http
+    timeout: 5s
+    http:
+      fail_if_ssl: false
+      fail_if_not_ssl: true
+      tls_config:
+        insecure_skip_verify: false
