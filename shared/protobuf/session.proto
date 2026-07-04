@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package session;
+option go_package = "github.com/observability-platform/identity-go/pb";
+
+service SessionService {
+    rpc GetActiveSessions (GetSessionsRequest) returns (GetSessionsResponse);
+    rpc TerminateSession (TerminateSessionRequest) returns (TerminateSessionResponse);
+    rpc ValidateConcurrentLogins (ConcurrentLoginRequest) returns (ConcurrentLoginResponse);
+}
+
+message GetSessionsRequest {
+    string user_id = 1;
+}
+
+message SessionInfo {
+    string session_id = 1;
+    string device_id = 2;
+    string ip_address = 3;
+    string location = 4;
+    string created_at = 5;
+    string last_active = 6;
+}
+
+message GetSessionsResponse {
+    repeated SessionInfo sessions = 1;
+}
+
+message TerminateSessionRequest {
+    string session_id = 1;
+    string user_id = 2;
+}
+message TerminateSessionResponse {
+    bool success = 1;
+}
+
+message ConcurrentLoginRequest {
+    string user_id = 1;
+    string current_ip = 2;
+}
+message ConcurrentLoginResponse {
+    bool block_login = 1;
+    string reason = 2;
+}

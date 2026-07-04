@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package device;
+option go_package = "github.com/observability-platform/identity-go/pb";
+
+service DeviceService {
+    rpc RegisterDevice (RegisterDeviceRequest) returns (DeviceResponse);
+    rpc UpdateDeviceHealth (UpdateHealthRequest) returns (DeviceResponse);
+    rpc GetDevicePolicy (GetPolicyRequest) returns (PolicyResponse);
+}
+
+message RegisterDeviceRequest {
+    string user_id = 1;
+    string hostname = 2;
+    string os_version = 3;
+    string mac_address = 4;
+}
+
+message UpdateHealthRequest {
+    string device_id = 1;
+    bool firewall_enabled = 2;
+    bool disk_encrypted = 3;
+    bool antivirus_active = 4;
+}
+
+message DeviceResponse {
+    string device_id = 1;
+    string trust_status = 2;
+    string last_seen = 3;
+}
+
+message GetPolicyRequest {
+    string device_id = 1;
+}
+
+message PolicyResponse {
+    repeated string assigned_policies = 1;
+    bool access_granted = 2;
+}

@@ -52,3 +52,39 @@ def perform_rca(alert: AlertPayload):
         recommended_actions=actions,
         similar_past_incidents=past_incidents
     )
+
+class RunbookRequest(BaseModel):
+    incident_description: str
+
+class RunbookResponse(BaseModel):
+    runbook_steps: List[str]
+
+@router.post("/runbook", response_model=RunbookResponse)
+def generate_runbook(req: RunbookRequest):
+    """
+    Mock implementation of LLM Runbook Generation.
+    """
+    steps = [
+        "1. Acknowledge the alert in the NOC dashboard.",
+        "2. Check the logs in Loki for the affected service.",
+        "3. Review recent deployments in the CI/CD pipeline.",
+        "4. If CPU is exhausted, manually scale the deployment replicas."
+    ]
+    return RunbookResponse(runbook_steps=steps)
+
+class LogExplanationRequest(BaseModel):
+    log_snippet: str
+
+class LogExplanationResponse(BaseModel):
+    explanation: str
+    severity_assessment: str
+
+@router.post("/explain-log", response_model=LogExplanationResponse)
+def explain_log(req: LogExplanationRequest):
+    """
+    Mock Natural Language Log Explanation.
+    """
+    return LogExplanationResponse(
+        explanation=f"The log '{req.log_snippet}' indicates a failure in the downstream connection pool.",
+        severity_assessment="High - Immediate attention required."
+    )

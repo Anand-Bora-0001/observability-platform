@@ -1,0 +1,56 @@
+syntax = "proto3";
+
+package auth;
+option go_package = "github.com/observability-platform/identity-go/pb";
+
+service OAuthService {
+    rpc Authorize (AuthorizeRequest) returns (AuthorizeResponse);
+    rpc Token (TokenRequest) returns (TokenResponse);
+    rpc Revoke (RevokeRequest) returns (RevokeResponse);
+    rpc UserInfo (UserInfoRequest) returns (UserInfoResponse);
+}
+
+message AuthorizeRequest {
+    string client_id = 1;
+    string redirect_uri = 2;
+    string response_type = 3;
+    string scope = 4;
+    string state = 5;
+}
+message AuthorizeResponse {
+    string authorization_code = 1;
+    string redirect_uri = 2;
+}
+
+message TokenRequest {
+    string grant_type = 1;
+    string code = 2;
+    string client_id = 3;
+    string client_secret = 4;
+    string refresh_token = 5;
+}
+message TokenResponse {
+    string access_token = 1;
+    string token_type = 2;
+    int32 expires_in = 3;
+    string refresh_token = 4;
+    string id_token = 5;
+}
+
+message RevokeRequest {
+    string token = 1;
+    string token_type_hint = 2;
+}
+message RevokeResponse {
+    bool success = 1;
+}
+
+message UserInfoRequest {
+    string access_token = 1;
+}
+message UserInfoResponse {
+    string sub = 1;
+    string email = 2;
+    string name = 3;
+    repeated string roles = 4;
+}
