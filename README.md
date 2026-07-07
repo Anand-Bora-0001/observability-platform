@@ -8,33 +8,43 @@
 
 A Fortune 500-grade, event-driven **Identity & Access Management (IAM)** and Cloud Infrastructure Observability platform. 
 
-Designed specifically to demonstrate deep expertise in the domains of Modern Identity (JumpCloud, Okta), Cloud Engineering, Security Engineering, Distributed Systems, and DevOps.
+This platform is designed specifically to demonstrate deep expertise in the domains of Modern Identity (JumpCloud, Okta), Cloud Engineering, Security Engineering, Distributed Systems, and DevOps. It utilizes a microservices architecture communicating asynchronously over Apache Kafka and synchronously over gRPC and REST APIs.
 
+---
+
+## 📸 Platform Previews
+
+Here is a look at the various operations dashboards and portals included in this platform:
+
+### Network Operations Center (NOC) Dashboard
 ![NOC Dashboard UI](docs/frontend_ui.png)
 
-<details>
-<summary><b>View More Screenshots</b></summary>
-<br>
-
+### Server & Infrastructure Management
 ![Servers UI](docs/servers_ui.png)
+
+### Active Incident Tracking
 ![Incidents UI](docs/incidents_ui.png)
+
+### IT Ticketing & Support System
 ![Tickets UI](docs/tickets_ui.png)
 
-</details>
+---
 
-## 🌟 Core Identity & Security Features
+## 🌟 Core Features & Modules
 
+### 1. Modern Identity & Security
 - **OAuth2 & OIDC**: Full authorization code flows, Access/Refresh tokens, and Token Revocation endpoints built in Go.
 - **Device Management**: API endpoints for Device Registration, Trust Status, OS Health, and Policy Assignment.
 - **Session Management**: Endpoints for Active Sessions, Terminate Session, and Concurrent Login Detection.
-- **Event-Driven Microservices**: Powered by Apache Kafka (KRaft mode), ensuring highly scalable, asynchronous communication between nodes.
 - **Dynamic Security**: AWS Secrets Manager integration for dynamic credential retrieval. AWS IAM Roles for Service Accounts (IRSA) via OIDC Federation.
-- **Dual Frontends**: 
+
+### 2. Distributed Architecture
+- **Event-Driven Microservices**: Powered by Apache Kafka (KRaft mode), ensuring highly scalable, asynchronous communication between nodes.
+- **Micro-frontends & Dual UIs**: 
   - **Identity Portal (Vue 3)**: Administration for users, devices, policies, and audit logs.
-  - **Operations Dashboard (React)**: SRE & NOC operations and metrics.
+  - **Operations Dashboard (React)**: SRE & NOC operations, metrics, and incident management.
 
-## 🤖 AI & Observability
-
+### 3. AI & Deep Observability
 - **AI-Assisted Operations (AIOps)**: A specialized Python microservice performing LLM-assisted Root Cause Analysis (RCA), Runbook Generation, and Natural Language Log Explanation.
 - **The Three Pillars of Observability**: 
   - **Metrics**: Prometheus, Alertmanager & Grafana.
@@ -48,32 +58,32 @@ Designed specifically to demonstrate deep expertise in the domains of Modern Ide
 ```mermaid
 graph TD
     %% Frontends
-    Client([Web / Mobile Client])
-    NOC[React NOC Dashboard\n(Port 3000)]
-    Admin[Vue 3 Identity Portal\n(Port 3001)]
+    Client(["Web / Mobile Client"])
+    NOC["React NOC Dashboard\n(Port 3000)"]
+    Admin["Vue 3 Identity Portal\n(Port 3001)"]
     
     %% API Gateway
-    Ingress{{API Gateway / NGINX}}
+    Ingress{{"API Gateway / NGINX"}}
     
     %% Microservices
-    API[Python Core API\nFastAPI / Port 8000]
-    Identity[Go Identity Engine\ngRPC / Port 50051]
-    AIOps[AI Ops API\nFastAPI / Port 8002]
+    API["Python Core API\nFastAPI / Port 8000"]
+    Identity["Go Identity Engine\ngRPC / Port 50051"]
+    AIOps["AI Ops API\nFastAPI / Port 8002"]
     
     %% Event Streaming
-    Kafka{Apache Kafka\n(KRaft Mode)}
+    Kafka{"Apache Kafka\n(KRaft Mode)"}
     
     %% Databases & Secrets
-    DB[(PostgreSQL)]
-    Redis[(Redis Cache)]
-    AWS[AWS Secrets Manager]
+    DB[("PostgreSQL")]
+    Redis[("Redis Cache")]
+    AWS["AWS Secrets Manager"]
     
     %% Observability Stack
-    Prometheus(Prometheus)
-    Alertmanager(Alertmanager)
-    Grafana(Grafana)
-    Jaeger(Jaeger\nOTel Tracing)
-    Loki(Grafana Loki\nLog Aggregation)
+    Prometheus("Prometheus")
+    Alertmanager("Alertmanager")
+    Grafana("Grafana")
+    Jaeger("Jaeger\nOTel Tracing")
+    Loki("Grafana Loki\nLog Aggregation")
     
     %% Routing
     Client --> NOC
@@ -135,40 +145,62 @@ observability-platform/
 ## 🚀 Getting Started (Local Development)
 
 ### Prerequisites
-- Docker Engine & Docker Compose V2
-- Python 3.11+
-- Go 1.23+
-- Node.js 20+
-- Minimum 8GB RAM available for Docker.
+Ensure you have the following installed on your machine before proceeding:
+- **Docker Engine & Docker Compose V2** (Minimum 8GB RAM allocated to Docker)
+- **Python 3.11+**
+- **Go 1.23+**
+- **Node.js 20+**
 
 ### 1. Spin up the Infrastructure
-Bring up the entire microservice and observability stack via Docker Compose:
+Bring up the entire microservice and observability stack locally via Docker Compose. This includes Kafka, PostgreSQL, Redis, and all observability tools.
 
 ```bash
 docker-compose up -d
 ```
 
-**Services Exposed:**
-- **NOC Dashboard**: `http://localhost:3000`
-- **Identity Portal**: `http://localhost:3001`
-- **Python Core API**: `http://localhost:8000`
+**Services Exposed Locally:**
+- **NOC Dashboard (React)**: `http://localhost:3000`
+- **Identity Portal (Vue 3)**: `http://localhost:3001`
+- **Python Core API (FastAPI)**: `http://localhost:8000`
 - **AI Ops API**: `http://localhost:8002`
-- **Grafana**: `http://localhost:3003` (Admin / Admin)
+- **Grafana**: `http://localhost:3003` *(Credentials: Admin / Admin)*
 - **Jaeger UI**: `http://localhost:16686`
 - **Prometheus**: `http://localhost:9090`
 
 ### 2. Microservice Development
-To run a service locally outside of Docker (for debugging):
+To run a service locally outside of Docker (for step-through debugging):
 
-**Go Identity Service**:
+**Go Identity Service (gRPC):**
 ```bash
 cd services/identity-go
 go run cmd/server/main.go
 ```
 
-**Python Core API**:
+**Python Core API (FastAPI):**
 ```bash
 cd services/api-python
+python -m venv venv
+source venv/bin/activate  # Or `venv\Scripts\activate` on Windows
 pip install -r requirements.txt
 uvicorn main:app --reload --port 8000
 ```
+
+### 3. Frontend Development
+**Run the React Dashboard:**
+```bash
+cd apps/dashboard-react
+npm install
+npm run dev
+```
+
+---
+
+## 🧪 Testing & CI/CD
+
+The platform enforces strict quality via GitHub Actions.
+
+- **Enterprise CI Pipeline**: Runs on every push to `main` and `develop`. It includes:
+  - Unit Tests for the Go Identity Service (`go test`)
+  - Unit Tests for the Python Backend (`pytest` + `alembic` migrations testing)
+  - Linting for both React and Vue frontends
+- **Enterprise CD Pipeline**: Automatically builds and pushes Docker images to Amazon ECR, and handles continuous deployment using Helm on AWS EKS. (Currently disabled for local demo purposes).
