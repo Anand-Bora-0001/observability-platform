@@ -23,7 +23,7 @@ jobs:
 
     - name: Build and push Python Backend
       run: |
-        docker build -t ${{ steps.login-ecr.outputs.registry }}/observability-backend:${{ github.sha }} ./services/backend-python
+        docker build -t ${{ steps.login-ecr.outputs.registry }}/observability-backend:${{ github.sha }} ./services/api-python
         docker push ${{ steps.login-ecr.outputs.registry }}/observability-backend:${{ github.sha }}
 
   deploy-helm:

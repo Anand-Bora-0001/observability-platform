@@ -10,6 +10,18 @@ A Fortune 500-grade, event-driven **Identity & Access Management (IAM)** and Clo
 
 Designed specifically to demonstrate deep expertise in the domains of Modern Identity (JumpCloud, Okta), Cloud Engineering, Security Engineering, Distributed Systems, and DevOps.
 
+![NOC Dashboard UI](docs/frontend_ui.png)
+
+<details>
+<summary><b>View More Screenshots</b></summary>
+<br>
+
+![Servers UI](docs/servers_ui.png)
+![Incidents UI](docs/incidents_ui.png)
+![Tickets UI](docs/tickets_ui.png)
+
+</details>
+
 ## 🌟 Core Identity & Security Features
 
 - **OAuth2 & OIDC**: Full authorization code flows, Access/Refresh tokens, and Token Revocation endpoints built in Go.
