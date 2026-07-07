@@ -37,7 +37,7 @@ jobs:
       run: |
         cd services/api-python
         alembic upgrade head || true
-        pytest tests/
+        python -m pytest tests/
 
   test-go-identity:
     runs-on: ubuntu-latest

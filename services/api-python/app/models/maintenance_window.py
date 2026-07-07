@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
-from app.db.session import Base
+from app.models.base import Base
 from datetime import datetime
 
 class MaintenanceWindow(Base):
